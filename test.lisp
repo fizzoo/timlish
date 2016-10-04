@@ -23,37 +23,68 @@
                            (cons *nouns* :noun)
                            (cons *adjectives* :adjective))))
   (defun tokenize-word (x)
+    "Tokenize the word by checking which class it belongs to."
     (let ((tok (cdr (find-if
                      (lambda (a) (trie-member (string-downcase x) (car a)))
                      tries-to-word))))
-      (if tok
-          (make-instance 'word-token
-                         :token tok
-                         :data x)
-          (make-instance 'word-token
-                         :token :unknown
-                         :data x)))))
+      (if (not tok)
+          (setf tok (class-of-char (char x 0))))
+      (make-instance 'word-token
+                     :token tok
+                     :data x))))
 
 
 (defun print-token (tok)
-  (format t "~a, ~a~%" (token tok) (data tok)))
+  "Print a token by printing its token and data."
+  (format t "~12a: ~a~%" (token tok) (data tok)))
 
-(defun split-on-space (x)
-  (let ((xl (coerce x 'list))
-        (l nil)
-        (cur ""))
-    (loop for i in xl do
-         (cond
-           ((eql i #\Space)
-            (setf l (append l (list cur)))
-            (setf cur ""))
-           (t
-            (setf cur (concatenate 'string cur (string i))))))
+(defun class-test-alpha (x)
+  "Tests if character x belongs to class alpha."
+  (or (alpha-char-p x)
+      (eql x #\')))
+(defun class-test-punc (x)
+  "Tests if character x belongs to class punc."
+  (member x (coerce ".,?!" 'list)))
+;;; Possibly unnecessary, 
+;; (defun class-test-whitespace (x)
+;;   (member x (list #\Space)))            ;May add tab/newline
+
+(defun make-nice-string ()
+  "Make an empty string that's adjustable with fill-pointer."
+  (make-array 0 :element-type 'character :adjustable t :fill-pointer t))
+
+(defun class-of-char (x)
+  "Get the 'character-class' of character x."
+  (cond ((class-test-alpha x)
+         :alpha)
+        ((class-test-punc x)
+         :punctuation)
+        (t
+         :whitespace)))
+
+(defun split-to-tokenizable (x)
+  "Split the string into a list of tokenizable 'words'.
+The elements of this list all belong to the same class, so you
+could get the character-class through (class-of-char (char r 0))"
+  (let ((l nil)
+        (cur (make-nice-string))
+        (last-class (class-of-char (char x 0))))
+    (loop for i across x do
+         (let ((cur-class (class-of-char i)))
+           (cond
+             ((eq cur-class last-class)
+              (vector-push-extend i cur))
+             (t
+              (setf l (append l (list cur)))
+              (setf cur (make-nice-string))
+              (setf last-class cur-class)
+              (vector-push-extend i cur)))))
     (if (not (equal cur ""))
         (setf l (append l (list cur))))
     l))
 
-(let* ((x "Hi my name is tim guy")
-       (list (split-on-space x))
+;;; The testing
+(let* ((x "I am victor. This is good.")
+       (list (split-to-tokenizable x))
        (tokens (map 'list #'tokenize-word list)))
   (map nil #'print-token tokens))
