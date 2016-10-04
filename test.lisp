@@ -12,16 +12,26 @@
     :initarg :data
     :initform nil)))
 
-(defparameter *nouns* (make-trie-from-file "nouns.txt"))
-(defparameter *verbs* (make-trie-from-file "verbs.txt"))
-(defparameter *adverbs* (make-trie-from-file "adverbs.txt"))
-(defparameter *adjectives* (make-trie-from-file "adjectives.txt"))
+(defparameter *adjectives* (make-trie-from-file "wordlists/adjectives.txt"))
+(defparameter *adverbs* (make-trie-from-file "wordlists/adverbs.txt"))
+(defparameter *articles* (make-trie-from-file "wordlists/articles.txt"))
+(defparameter *conjugations* (make-trie-from-file "wordlists/conjugations.txt"))
+(defparameter *interjections* (make-trie-from-file "wordlists/interjections.txt"))
+(defparameter *nouns* (make-trie-from-file "wordlists/nouns.txt"))
+(defparameter *prepositions* (make-trie-from-file "wordlists/prepositions.txt"))
+(defparameter *pronouns* (make-trie-from-file "wordlists/pronouns.txt"))
+(defparameter *verbs* (make-trie-from-file "wordlists/verbs.txt"))
 
-
-(let ((tries-to-word (list (cons *verbs* :verb)
-                           (cons *adverbs* :adverb)
-                           (cons *nouns* :noun)
-                           (cons *adjectives* :adjective))))
+(let ((tries-to-word (list
+                      (cons *articles* :articles)
+                      (cons *conjugations* :conjugations)
+                      (cons *pronouns* :pronouns)
+                      (cons *prepositions* :prepositions)
+                      (cons *interjections* :interjections)
+                      (cons *adverbs* :adverbs)
+                      (cons *verbs* :verbs)
+                      (cons *adjectives* :adjectives)
+                      (cons *nouns* :nouns))))
   (defun tokenize-word (x)
     "Tokenize the word by checking which class it belongs to."
     (let ((tok (cdr (find-if
