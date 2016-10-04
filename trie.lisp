@@ -52,11 +52,11 @@
     (format t ")")))
 
 (defun make-trie-from-file (filename)
-  "Create a trie from a file, adding each line as a word."
+  "Create a trie from a file, adding each line as a lowercase word."
   (let ((tr (make-instance 'trie)))
     (with-open-file (s filename)
       (loop for line = (read-line s nil :eof)
          until (eq line :eof)
-         do (trie-add line tr)))
+         do (trie-add (string-downcase line) tr)))
     tr))
 

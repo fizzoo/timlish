@@ -18,28 +18,21 @@
 (defparameter *adjectives* (make-trie-from-file "adjectives.txt"))
 
 
-(defun tokenize-word (x)
-  (cond
-    ((trie-member x *nouns*)
-     (make-instance 'word-token
-                    :token :noun
-                    :data x))
-    ((trie-member x *verbs*)
-     (make-instance 'word-token
-                    :token :verb
-                    :data x))
-    ((trie-member x *adverbs*)
-     (make-instance 'word-token
-                    :token :adverb
-                    :data x))
-    ((trie-member x *adjectives*)
-     (make-instance 'word-token
-                    :token :adjective
-                    :data x))
-    (t
-     (make-instance 'word-token
-                    :token :unknown
-                    :data x))))
+(let ((tries-to-word (list (cons *verbs* :verb)
+                           (cons *adverbs* :adverb)
+                           (cons *nouns* :noun)
+                           (cons *adjectives* :adjective))))
+  (defun tokenize-word (x)
+    (let ((tok (cdr (find-if
+                     (lambda (a) (trie-member (string-downcase x) (car a)))
+                     tries-to-word))))
+      (if tok
+          (make-instance 'word-token
+                         :token tok
+                         :data x)
+          (make-instance 'word-token
+                         :token :unknown
+                         :data x)))))
 
 
 (defun print-token (tok)
@@ -60,7 +53,7 @@
         (setf l (append l (list cur))))
     l))
 
-(let* ((x (read-line))
+(let* ((x "Hi my name is tim guy")
        (list (split-on-space x))
        (tokens (map 'list #'tokenize-word list)))
   (map nil #'print-token tokens))
