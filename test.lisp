@@ -27,11 +27,11 @@
                       (cons *conjugations* :conjugations)
                       (cons *pronouns* :pronouns)
                       (cons *prepositions* :prepositions)
-                      (cons *interjections* :interjections)
                       (cons *adverbs* :adverbs)
-                      (cons *verbs* :verbs)
                       (cons *adjectives* :adjectives)
-                      (cons *nouns* :nouns))))
+                      (cons *nouns* :nouns)
+                      (cons *interjections* :interjections)
+                      (cons *verbs* :verbs))))
   (defun tokenize-word (x)
     "Tokenize the word by checking which class it belongs to."
     (let ((tok (cdr (find-if
