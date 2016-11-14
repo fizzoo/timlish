@@ -93,8 +93,47 @@ could get the character-class through (class-of-char (char r 0))"
         (setf l (append l (list cur))))
     l))
 
+(defun maybe-convert-to-er (list)
+  "Check if the heads of LIST allow er-ing, if so, return a new er-ed
+list, else nil."
+  (let ((a (nth 0 list))
+        (b (nth 1 list))
+        (c (nth 2 list)))
+    (when c
+      (when (and
+             (equal (token a) :adjectives)
+             (equal (token c) :nouns))
+        (let ((new (list
+                    (make-instance 'word-token
+                                   :token (token c)
+                                   :data (concatenate 'string (data c) "er"))
+                    b
+                    (make-instance 'word-token
+                                   :token :prepositions
+                                   :data "of")
+                    b
+                    a)))
+          (append new (cdddr list)))))))
+
+(defun modifyonce (f list)
+  "Modify the LIST with the first subsequence of LIST that F returns
+non-nil on."
+  (when list
+      (let ((new (funcall f list)))
+        (if new
+            new
+            (cons (car list)
+                  (modifyonce f (cdr list)))))))
+
+(defun main ()
+  (let* ((line (read-line))
+         (tokens (map 'list #'tokenize-word (split-to-tokenizable line)))
+         (er-ed (modifyonce #'maybe-convert-to-er tokens)))
+    (format t "~{~A~}" (map 'list #'data er-ed)))) 
+
 ;;; The testing
-(let* ((x "I am victor. This is good.")
+(let* ((x "Tim is a good guy.")
        (list (split-to-tokenizable x))
-       (tokens (map 'list #'tokenize-word list)))
-  (map nil #'print-token tokens))
+       (tokens (map 'list #'tokenize-word list))
+       (modified (modifyonce #'maybe-convert-to-er tokens)))
+  (map nil #'print-token modified))
